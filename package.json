@@ -1,0 +1,24 @@
+{
+  "name": "pixel-perfect-website-cloner",
+  "version": "1.0.0",
+  "description": "Agentic website cloning engine for 100% pixel and motion fidelity",
+  "main": "scripts/local-api-proxy.js",
+  "scripts": {
+    "proxy": "node scripts/local-api-proxy.js",
+    "auth": "node scripts/auth-login.js",
+    "crawl": "node scripts/crawl-sitemap.js",
+    "verify": "node scripts/verify-1to1.js"
+  },
+  "keywords": [
+    "ai",
+    "website-cloner",
+    "pixel-perfect",
+    "agentic",
+    "scraping",
+    "headless-chrome",
+    "cdp",
+    "claude-code"
+  ],
+  "author": "David Patton",
+  "license": "MIT"
+}

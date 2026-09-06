@@ -1,0 +1,7 @@
+node_modules/
+.tasks/
+*.log
+auth/session.json
+comp/
+.DS_Store
+Thumbs.db
