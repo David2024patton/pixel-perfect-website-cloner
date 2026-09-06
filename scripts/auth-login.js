@@ -18,6 +18,7 @@ const http = require('http');
 const url = require('url');
 const fs = require('fs');
 const path = require('path');
+const { getChromePath, getTempDir } = require('./browser-env');
 
 function arg(name, def) {
   const i = process.argv.indexOf("--" + name);
@@ -32,7 +33,7 @@ const OUT_FILE = arg("out", path.join(process.cwd(), "auth", "session.json"));
 const MOCKS_FILE = arg("mocks", path.join(process.cwd(), "auth", "mocks.json"));
 const PORT = parseInt(arg("port", "9335"), 10);
 const IS_VISIBLE = hasFlag("visible");
-const CHROME = process.env.CHROME || "C:/Program Files/Google/Chrome/Application/chrome.exe";
+const CHROME = getChromePath();
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 if (!TARGET_URL) {
@@ -76,8 +77,7 @@ function cdp(wsUrl) {
 }
 
 async function launchStealthChrome() {
-  const ud = path.join(process.env.TEMP || "C:/tmp", "chrome-auth-" + Date.now());
-  fs.mkdirSync(ud, { recursive: true });
+  const ud = getTempDir("chrome-auth-");
 
   const flags = [
     IS_VISIBLE ? "--window-size=1440,900" : "--headless=new",

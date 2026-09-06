@@ -22,6 +22,7 @@ const url = require('url');
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
+const { getChromePath, getTempDir } = require('./browser-env');
 
 function arg(name, def) {
   const i = process.argv.indexOf("--" + name);
@@ -37,7 +38,7 @@ if (!TARGET_URL) {
 const OUT_DIR = arg("out", path.join(process.cwd(), "mirror"));
 const COPY_FILE = arg("copy", path.join(process.cwd(), "copy.md"));
 const PORT = parseInt(arg("port", "9334"), 10);
-const CHROME = process.env.CHROME || "C:/Program Files/Google/Chrome/Application/chrome.exe";
+const CHROME = getChromePath();
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 const parsedTarget = url.parse(TARGET_URL);
@@ -108,8 +109,7 @@ function fetchDirect(reqUrl) {
 }
 
 async function launchChrome() {
-  const ud = path.join(process.env.TEMP || "C:/tmp", "chrome-netcap-" + Date.now());
-  fs.mkdirSync(ud, { recursive: true });
+  const ud = getTempDir("chrome-netcap-");
   const ch = spawn(CHROME, [
     "--headless=new",
     "--disable-gpu",

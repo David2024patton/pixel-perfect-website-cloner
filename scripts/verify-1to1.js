@@ -25,6 +25,7 @@ const http = require('http');
 const url = require('url');
 const fs = require('fs');
 const path = require('path');
+const { getChromePath, getTempDir } = require('./browser-env');
 
 function arg(name, def) {
   const i = process.argv.indexOf("--" + name);
@@ -40,7 +41,7 @@ const VIEWPORT_ARG = arg("viewport", "1440x900");
 const VW = parseInt(VIEWPORT_ARG.split("x")[0], 10);
 const VH = parseInt(VIEWPORT_ARG.split("x")[1], 10);
 const PORT = parseInt(arg("port", "9337"), 10);
-const CHROME = process.env.CHROME || "C:/Program Files/Google/Chrome/Application/chrome.exe";
+const CHROME = getChromePath();
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 if (!LIVE_BASE || !LOCAL_BASE) {
@@ -76,8 +77,7 @@ function cdp(wsUrl) {
 }
 
 async function launchChrome() {
-  const ud = path.join(process.env.TEMP || "C:/tmp", "chrome-verify-" + Date.now());
-  fs.mkdirSync(ud, { recursive: true });
+  const ud = getTempDir("chrome-verify-");
   const ch = spawn(CHROME, [
     "--headless=new",
     "--disable-gpu",

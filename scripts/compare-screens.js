@@ -13,7 +13,8 @@
      "local" is a path to navigate to, or an SPA view name passed to window.go(). */
 const { spawn } = require("child_process");
 const fs = require("fs"), path = require("path");
-const CHROME = process.env.CHROME || "C:/Program Files/Google/Chrome/Application/chrome.exe";
+const { getChromePath, getTempDir } = require("./browser-env");
+const CHROME = getChromePath();
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 function arg(name, def){ const i = process.argv.indexOf("--"+name); return i>-1 ? process.argv[i+1] : def; }
 const LIVE = arg("live"), LOCAL = arg("local"), ROUTES_FILE = arg("routes");
@@ -21,7 +22,7 @@ const VW = parseInt(arg("viewport","1440x900").split("x")[0],10);
 const VH = parseInt(arg("viewport","1440x900").split("x")[1],10);
 const OUT = arg("out", path.join("comp","compare"));
 const SESSION = arg("session"); const LOCAL_AUTH = arg("local-auth-key");
-const PORT = 9333, UD = path.join(process.env.TEMP||"C:/tmp", "chrome-compare-"+Date.now());
+const PORT = 9333, UD = getTempDir("chrome-compare-");
 async function launch(){ fs.rmSync(UD,{recursive:true,force:true}); const ch=spawn(CHROME,["--headless=new","--disable-gpu","--no-sandbox","--disable-dev-shm-usage",`--remote-debugging-port=${PORT}`,`--user-data-dir=${UD}`,`--window-size=${VW},${VH}`,"about:blank"],{stdio:"ignore",detached:true}); ch.unref(); for(let i=0;i<30;i++){ await sleep(500); try{ if((await fetch(`http://localhost:${PORT}/json`)).ok) return; }catch(e){} } throw new Error("CDP down"); }
 async function target(){ for(let i=0;i<30;i++){ try{ const l=await(await fetch(`http://localhost:${PORT}/json/list`)).json(); const t=l.find(x=>x.type==="page"); if(t)return t; }catch(e){} await sleep(500);} throw new Error("no page"); }
 function cdp(u){ const ws=new WebSocket(u); let id=0; const p=new Map(); const ready=new Promise((r,j)=>{ws.onopen=r;ws.onerror=j;}); ws.onmessage=e=>{try{const m=JSON.parse(e.data); if(m.id&&p.has(m.id)){p.get(m.id)(m);p.delete(m.id);}}catch(_){}}; return { ready, send(method,params={}){ return new Promise((r,j)=>{ const i=++id; p.set(i,m=>m.error?j(new Error(JSON.stringify(m.error))):r(m.result)); ws.send(JSON.stringify({id:i,method,params})); }); }, close(){ws.close();} }; }
